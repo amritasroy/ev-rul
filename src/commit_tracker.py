@@ -190,6 +190,7 @@ class CommitAnalyzer:
             difficulty = self.calculate_difficulty_score(stats)
             
             # Amount normalized to 0-100 scale
+            # Divide by 10 to normalize: 10 lines = 1 point, 1000 lines = 100 points
             amount = min((stats['total_changes'] / 10), 100)
             
             value = self.calculate_value_score(quality, difficulty, amount)
@@ -281,6 +282,10 @@ class CommitAnalyzer:
         for author, data in sorted_contributors:
             total_commits = data['total_commits']
             
+            # Skip contributors with no commits
+            if total_commits == 0:
+                continue
+            
             # Calculate averages
             avg_quality = data['quality_score'] / total_commits
             avg_difficulty = data['difficulty_score'] / total_commits
@@ -318,6 +323,11 @@ class CommitAnalyzer:
         export_data = {}
         for author, data in self.contributors.items():
             total_commits = data['total_commits']
+            
+            # Skip contributors with no commits
+            if total_commits == 0:
+                continue
+            
             export_data[author] = {
                 'total_commits': total_commits,
                 'lines_added': data['lines_added'],
