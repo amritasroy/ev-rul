@@ -9,13 +9,15 @@ import subprocess
 import sys
 from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import Dict, List, Tuple
-import re
+from typing import Dict, List
 import json
 
 
 class CommitAnalyzer:
     """Analyzes git commits to extract metrics about contributors."""
+    
+    # Normalization factor for amount score: 10 lines = 1 point, 1000 lines = 100 points
+    AMOUNT_NORMALIZATION_FACTOR = 10
     
     def __init__(self, repo_path: str = "."):
         self.repo_path = repo_path
@@ -189,9 +191,8 @@ class CommitAnalyzer:
             quality = self.calculate_quality_score(stats, commit['subject'])
             difficulty = self.calculate_difficulty_score(stats)
             
-            # Amount normalized to 0-100 scale
-            # Divide by 10 to normalize: 10 lines = 1 point, 1000 lines = 100 points
-            amount = min((stats['total_changes'] / 10), 100)
+            # Amount normalized to 0-100 scale using class constant
+            amount = min((stats['total_changes'] / self.AMOUNT_NORMALIZATION_FACTOR), 100)
             
             value = self.calculate_value_score(quality, difficulty, amount)
             
@@ -303,7 +304,7 @@ class CommitAnalyzer:
             print(f"   🎯 Overall Value Score:  {avg_value:.2f}/100")
             print(f"   ✨ Quality Score:        {avg_quality:.2f}/100")
             print(f"   🔧 Difficulty Score:     {avg_difficulty:.2f}/100")
-            print(f"   📦 Amount Score:         {(data['lines_added'] + data['lines_deleted']) / total_commits / 10:.2f}/100")
+            print(f"   📦 Amount Score:         {(data['lines_added'] + data['lines_deleted']) / total_commits / self.AMOUNT_NORMALIZATION_FACTOR:.2f}/100")
             print()
             print(f"   💼 Work Style: {work_style}")
             print()
